@@ -235,3 +235,42 @@ canvas#next {
     cursor: not-allowed;
     background: #444;
 }
+
+.player-list-box {
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 20px 0;
+    text-align: left;
+    min-height: 150px;
+}
+
+.player-list-box h3 {
+    margin-top: 0;
+    font-size: 14px;
+    color: #888;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+}
+
+#players-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#players-list li {
+    padding: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+}
+
+#players-list li:last-child {
+    border-bottom: none;
+}
+
+.is-me {
+    color: var(--accent);
+    font-weight: bold;
+}
