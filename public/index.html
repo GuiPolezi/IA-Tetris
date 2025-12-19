@@ -11,6 +11,23 @@
     />
   </head>
   <body>
+    <div id="menu-overlay">
+    <div class="menu-box">
+        <h1>TETRIS <span style="color:var(--accent)">ONLINE</span></h1>
+        
+        <div class="input-group">
+            <input type="text" id="player-name" placeholder="Digite seu Nickname" maxlength="10">
+        </div>
+
+        <div class="menu-buttons">
+            <button onclick="startSinglePlayer()" class="btn-menu">Singleplayer</button>
+            <button onclick="openMultiplayerMenu()" class="btn-menu disabled">Multiplayer (Em breve)</button>
+            <button onclick="alert('Configurações...')" class="btn-menu secondary">Configurações</button>
+        </div>
+    </div>
+</div>
+
+<div class="main-card" style="filter: blur(5px);"> ```
     <div class="main-card">
       <div class="game-container">
         <canvas id="tetris"></canvas>

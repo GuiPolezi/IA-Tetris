@@ -471,6 +471,47 @@ function toggleMusic() {
     }
 }
 
-playerReset();
-updateScore();
-update();
+// Variável para controlar se o jogo está rodando
+let isGameRunning = false;
+
+// Função para iniciar o loop do jogo
+function initGame() {
+    if (isGameRunning) return;
+    isGameRunning = true;
+    
+    playerReset();
+    updateScore();
+    update();
+}
+
+// --- LÓGICA DO MENU ---
+
+function startSinglePlayer() {
+    const nameInput = document.getElementById('player-name').value;
+    if (!nameInput) {
+        alert("Por favor, digite um Nickname!");
+        return;
+    }
+
+    // Salva o nome (usaremos no multiplayer depois)
+    player.name = nameInput;
+
+    // Esconde o menu e tira o blur do jogo
+    const menu = document.getElementById('menu-overlay');
+    const gameCard = document.querySelector('.main-card');
+    
+    menu.style.opacity = '0';
+    setTimeout(() => {
+        menu.style.display = 'none';
+        gameCard.style.filter = 'none'; // Remove o blur
+        initGame(); // Inicia o jogo
+    }, 500);
+}
+
+function openMultiplayerMenu() {
+    // Aqui implementaremos a lógica de salas na próxima etapa
+    alert("Funcionalidade Multiplayer será implementada no próximo passo!");
+}
+
+// NOTA: Remova as chamadas diretas de playerReset, updateScore e update que estavam aqui soltas
+// O jogo agora só começa quando initGame() é chamado.
