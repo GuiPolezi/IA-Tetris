@@ -1,14 +1,17 @@
 const express = require('express');
-const app = express();
 const http = require('http');
+const { Server } = require("socket.io"); // Importação deve vir antes do uso
+
+const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const { Server } = require("socket.io");
 
-app.use(express.static(path.join(__dirname, 'public')));
+// --- CORREÇÃO: Servir arquivos da Raiz (Root) ---
+// Se seus arquivos index.html, style.css e script.js estão na mesma pasta do server.js:
+app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(__dirname + '/index.html');
 });
 
 // ESTADO DO SERVIDOR
@@ -148,6 +151,6 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
