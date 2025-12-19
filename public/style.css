@@ -206,6 +206,109 @@ canvas#next {
     backdrop-filter: blur(8px);
     transition: opacity 0.5s;
 }
+/* 1. O Overlay (Fundo Escuro) */
+#pause-menu {
+    position: fixed;       /* Fixa na tela, independente da rolagem */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    /* Fundo escuro com leve transparência */
+    background: rgba(0, 0, 0, 0.85); 
+    
+    /* Efeito de vidro fosco (muito moderno) */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    /* Centralização perfeita com Flexbox */
+    display: none; /* Controlado pelo JS */
+    justify-content: center;
+    align-items: center;
+    
+    /* Garante que fique acima de TUDO (Canvas, UI, etc) */
+    z-index: 9999; 
+}
+
+/* 2. A Caixa do Menu (O Cartão) */
+#pause-menu .menu-content {
+    background: #1e1e24;   /* Cinza chumbo escuro moderno */
+    padding: 40px;
+    border-radius: 12px;   /* Bordas arredondadas */
+    
+    /* Sombra suave para dar profundidade (elevação) */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    
+    /* Borda sutil para destacar do fundo */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;             /* Espaço entre os botões */
+    min-width: 320px;      /* Largura mínima confortável */
+    
+    /* Pequena animação de entrada */
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 3. Título */
+#pause-menu h2 {
+    margin: 0 0 20px 0;
+    color: #fff;
+    font-family: 'Arial', sans-serif; /* Ou sua fonte customizada */
+    font-size: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* 4. Estilização Geral dos Botões */
+#pause-menu button {
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    color: white;
+    outline: none;
+}
+
+/* Efeito de Hover (passar o mouse) nos botões */
+#pause-menu button:hover {
+    transform: translateY(-2px); /* Levanta levemente */
+    filter: brightness(1.2);     /* Fica mais brilhante */
+}
+
+/* Efeito de Clique */
+#pause-menu button:active {
+    transform: translateY(1px);
+}
+
+/* 5. Cores Específicas */
+#btn-resume {
+    background-color: #2ed573; /* Verde Neon (estilo Tetris) */
+    box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3); /* Brilho verde */
+}
+
+#btn-quit {
+    background-color: #ff4757; /* Vermelho Neon */
+    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3); /* Brilho vermelho */
+}
+
+/* Animação Pop-in (O menu surge crescendo) */
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
 
 .menu-box {
     background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
@@ -226,7 +329,6 @@ canvas#next {
 }
 
 .input-group input {
-    width: 100%;
     padding: 12px;
     margin-bottom: 20px;
     border-radius: 8px;
@@ -309,4 +411,29 @@ canvas#next {
 .is-me {
     color: var(--accent);
     font-weight: bold;
+}
+
+/* NOVO: Estilo para o Countdown */
+#countdown {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 100px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 20px var(--accent);
+    z-index: 200;
+    pointer-events: none;
+    font-family: 'Outfit', sans-serif;
+}
+
+.pulse {
+    animation: pulseAnim 0.8s ease-out infinite;
+}
+
+@keyframes pulseAnim {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
 }

@@ -17,6 +17,43 @@ let currentRoomPlayers = [];
 let isHost = false;
 let isGameRunning = false;
 
+// Variável de controle do menu
+let isMenuOpen = false;
+
+// Variável que define o modo de jogo (você já deve ter algo assim)
+// Exemplo: 'single' ou 'multi'
+let gameMode = 'single'; // ou defina dinamicamente quando o jogo começar
+
+const pauseMenu = document.getElementById('pause-menu');
+const btnResume = document.getElementById('btn-resume');
+const btnQuit = document.getElementById('btn-quit');
+
+// Função para Alternar o Menu
+function toggleMenu() {
+    isMenuOpen = !isMenuOpen;
+    
+    if (isMenuOpen) {
+        pauseMenu.style.display = 'flex'; // Mostra o menu
+    } else {
+        pauseMenu.style.display = 'none'; // Esconde o menu
+    }
+}
+
+// Event Listeners para os botões
+btnResume.addEventListener('click', toggleMenu);
+
+btnQuit.addEventListener('click', () => {
+    // Aqui vai sua lógica de sair (refresh na página ou desconectar socket)
+    window.location.reload(); 
+});
+
+// Listener da tecla ESC
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        toggleMenu();
+    }
+});
+
 // --- SISTEMA DE ÁUDIO ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -293,7 +330,10 @@ function arenaSweep() {
         player.lines += rowCount;
         player.level = Math.floor(player.lines / 10) + 1;
         
-        dropInterval = Math.max(100, 1000 - (player.level - 1) * 100); 
+        // FÓRMULA RECOMENDADA (Curva Suave):
+        // A cada nível, a velocidade aumenta em cerca de 10%.
+        // Math.pow(0.9, ...) significa 90% do tempo anterior.
+        dropInterval = 1000 * Math.pow(0.9, player.level - 1);
         updateScore();
         broadcastGameState();
     }
@@ -323,6 +363,7 @@ function playerReset() {
             // Singleplayer reset
             arena.forEach(row => row.fill(0));
             player.score = 0;
+            dropInterval = 1000;
             updateScore();
             isGameRunning = true; 
         }
@@ -353,6 +394,17 @@ function updateScore() {
 
 function update(time = 0) {
     if (!isGameRunning) return;
+
+    // Se o menu estiver aberto E for Singleplayer
+    if (isMenuOpen && gameMode === 'single') {
+        // Atualizamos o lastTime para o tempo atual, mas NÃO fazemos nada.
+        // Isso evita que, ao voltar, o jogo calcule que passaram 10 segundos e jogue a peça lá embaixo.
+        lastTime = time; 
+        
+        // Mantemos o loop rodando (para quando despausar ele estar pronto), mas paramos por aqui neste frame.
+        requestAnimationFrame(update); 
+        return; 
+    }
 
     const deltaTime = time - lastTime;
     lastTime = time;
@@ -438,6 +490,7 @@ function initGame() {
     playerReset();
     updateScore();
     update();
+    dropInterval = 1000; // <--- ADICIONE ISSO AQUI
 }
 
 // --- MENUS E SOCKET ---
@@ -454,6 +507,7 @@ function startSinglePlayer() {
     player.name = name;
     document.getElementById('menu-overlay').style.display = 'none';
     document.querySelector('.main-card').style.filter = 'none';
+    gameMode = 'single';
     initGame();
 }
 
@@ -588,6 +642,7 @@ socket.on('player_eliminated', (deadPlayerId) => {
     }
 });
 
+// NOVO: Soft Reset Listener
 socket.on('game_over_winner', (winner) => {
     isGameRunning = false;
     const menu = document.getElementById('menu-overlay');
@@ -603,10 +658,11 @@ socket.on('game_over_winner', (winner) => {
         message = `FIM DE JOGO<br>Vencedor: <span style="color:var(--accent)">${winner.name}</span>`;
     }
 
+    // Botão Voltar ao Lobby usa função do socket agora, não location.reload()
     menuBox.innerHTML = `
         <h1>RESULTADO</h1>
         <p style="font-size: 20px; color: #fff; margin-bottom: 20px;">${message}</p>
-        <button onclick="location.reload()" class="btn-menu">Voltar ao Lobby</button>
+        <button onclick="requestLobbyReturn()" class="btn-menu">Voltar ao Lobby</button>
     `;
     
     document.getElementById('multiplayer-menu').style.display = 'none';
@@ -614,14 +670,79 @@ socket.on('game_over_winner', (winner) => {
     menuBox.style.display = 'block';
 });
 
+// NOVO: Função para pedir reset
+function requestLobbyReturn() {
+    if (isHost) {
+        socket.emit('reset_lobby', currentRoomId);
+    } else {
+        // Se não for host, apenas espera (ou podemos forçar reload se o host sumiu)
+        alert("Aguardando o Host reiniciar a sala...");
+    }
+}
+
+// NOVO: Listener para voltar ao Lobby (Todos)
+socket.on('return_to_lobby', () => {
+    // 1. Reseta Visuais
+    arena.forEach(row => row.fill(0));
+    player.score = 0;
+    updateScore();
+    draw(); // Desenha tela vazia
+
+    // 2. Reseta Oponentes
+    for (let i = 0; i < 3; i++) {
+        const slot = document.getElementById(`remote-slot-${i}`);
+        slot.querySelector('.remote-name').innerText = "Aguardando...";
+        slot.querySelector('.remote-name').style.color = "#888"; // Reseta cor vermelha de morte
+        const remoteCtx = slot.querySelector('.remote-canvas').getContext('2d');
+        remoteCtx.fillStyle = '#000';
+        remoteCtx.fillRect(0, 0, 100, 160);
+    }
+
+    // 3. Mostra Tela de Lobby
+    document.getElementById('menu-overlay').style.display = 'flex';
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('lobby-screen').style.display = 'block';
+    
+    // 4. Reaplica Blur
+    document.querySelector('.main-card').style.filter = 'blur(5px)';
+});
+
+
 function requestStartGame() {
     if (!isHost) return;
     socket.emit('start_game', currentRoomId);
 }
 
+// ATUALIZADO: Com Countdown
 socket.on('game_started', () => {
     document.getElementById('menu-overlay').style.display = 'none';
     document.querySelector('.main-card').style.filter = 'none';
     setupRemotePlayers();
-    initGame();
+    gameMode = 'multi';
+    runCountdown(); // Chama o countdown em vez de initGame direto
 });
+
+// NOVO: Função de Contagem
+function runCountdown() {
+    const el = document.getElementById('countdown');
+    el.style.display = 'block';
+    
+    let count = 3;
+    el.innerText = count;
+    el.className = 'pulse';
+    
+    const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            el.innerText = count;
+        } else if (count === 0) {
+            el.innerText = "GO!";
+            sounds.clear(); 
+        } else {
+            clearInterval(interval);
+            el.style.display = 'none';
+            el.className = '';
+            initGame();
+        }
+    }, 1000);
+}

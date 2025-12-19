@@ -106,7 +106,6 @@ io.on('connection', (socket) => {
                 if (room.players.length === 0) {
                     delete rooms[roomId];
                 } else {
-                    // Passa a liderança se o host saiu
                     if (wasHost) {
                         room.players[0].isHost = true;
                     }
@@ -126,7 +125,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 6. SYNC (Apenas visual, sem lógica de ataque)
+    // 6. SYNC
     socket.on('player_update', (data) => {
         const { roomId, matrix, score } = data;
         socket.to(roomId).emit('remote_board_update', {
@@ -134,6 +133,16 @@ io.on('connection', (socket) => {
             matrix: matrix,
             score: score
         });
+    });
+
+    // 7. SOFT RESET (Voltar ao Lobby)
+    socket.on('reset_lobby', (roomId) => {
+        const room = rooms[roomId];
+        if (room) {
+            room.gameStarted = false;
+            room.players.forEach(p => p.alive = true);
+            io.to(roomId).emit('return_to_lobby');
+        }
     });
 });
 
