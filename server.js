@@ -11,10 +11,8 @@ app.get('/', (req, res) => {
 });
 
 // ESTADO DO SERVIDOR
-// Estrutura: { 'SALA_ID': { players: [{id, name, isHost}], gameStarted: false } }
 const rooms = {}; 
 
-// Função auxiliar para gerar ID de sala (4 letras aleatórias)
 function generateRoomId() {
     return Math.random().toString(36).substring(2, 6).toUpperCase();
 }
@@ -26,21 +24,16 @@ io.on('connection', (socket) => {
     socket.on('create_room', (playerName) => {
         const roomId = generateRoomId();
         
-        // Cria a sala no servidor
         rooms[roomId] = {
             players: [],
             gameStarted: false
         };
 
-        // Adiciona o jogador como HOST
-        const player = { id: socket.id, name: playerName, isHost: true };
+        const player = { id: socket.id, name: playerName, isHost: true, alive: true };
         rooms[roomId].players.push(player);
         
-        socket.join(roomId); // Função do Socket.io para agrupar conexões
-        
-        // Responde para quem criou
+        socket.join(roomId);
         socket.emit('room_created', roomId);
-        // Atualiza a lista para todos na sala (no caso, só ele)
         io.to(roomId).emit('update_room_state', rooms[roomId]);
     });
 
@@ -59,15 +52,11 @@ io.on('connection', (socket) => {
                 return;
             }
 
-            // Adiciona jogador
-            const player = { id: socket.id, name: playerName, isHost: false };
+            const player = { id: socket.id, name: playerName, isHost: false, alive: true };
             room.players.push(player);
             
             socket.join(roomId);
-            
-            // Avisa o cliente que deu certo
             socket.emit('joined_success', roomId);
-            // Atualiza a lista para TODOS na sala
             io.to(roomId).emit('update_room_state', room);
             
         } else {
@@ -75,23 +64,52 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 3. DESCONEXÃO
+    // 3. JOGADOR MORREU (Lógica de Vitória)
+    socket.on('player_died', (roomId) => {
+        const room = rooms[roomId];
+        if (!room || !room.gameStarted) return;
+
+        const player = room.players.find(p => p.id === socket.id);
+        if (player) {
+            player.alive = false;
+            io.to(roomId).emit('player_eliminated', socket.id);
+        }
+
+        const livingPlayers = room.players.filter(p => p.alive);
+
+        if (livingPlayers.length === 1) {
+            // Temos um vencedor!
+            const winner = livingPlayers[0];
+            io.to(roomId).emit('game_over_winner', winner);
+            
+            room.gameStarted = false;
+            room.players.forEach(p => p.alive = true);
+        } 
+        else if (livingPlayers.length === 0) {
+            // Empate
+            io.to(roomId).emit('game_over_draw');
+            room.gameStarted = false;
+            room.players.forEach(p => p.alive = true);
+        }
+    });
+
+    // 4. DESCONEXÃO
     socket.on('disconnect', () => {
-        // Precisamos encontrar em qual sala o jogador estava para removê-lo
         for (const roomId in rooms) {
             const room = rooms[roomId];
             const playerIndex = room.players.findIndex(p => p.id === socket.id);
             
             if (playerIndex !== -1) {
+                const wasHost = room.players[playerIndex].isHost;
                 room.players.splice(playerIndex, 1);
                 
-                // Se a sala ficou vazia, deleta a sala
                 if (room.players.length === 0) {
                     delete rooms[roomId];
                 } else {
-                    // Se o HOST saiu, passa a liderança para o próximo
-                    // (Lógica simplificada: se quem saiu era host, o primeiro da lista vira host)
-                    // Para este MVP, vamos apenas atualizar a lista
+                    // Passa a liderança se o host saiu
+                    if (wasHost) {
+                        room.players[0].isHost = true;
+                    }
                     io.to(roomId).emit('update_room_state', room);
                 }
                 break;
@@ -99,24 +117,20 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 4. INICIAR JOGO (Apenas Host)
+    // 5. INICIAR JOGO
     socket.on('start_game', (roomId) => {
         const room = rooms[roomId];
         if (room) {
             room.gameStarted = true;
-            // Avisa TODOS na sala para começarem
             io.to(roomId).emit('game_started');
         }
     });
 
-    // 5. ATUALIZAÇÃO DE ESTADO (Sync)
-    // O cliente envia: { matrix, score, shadow }
+    // 6. SYNC (Apenas visual, sem lógica de ataque)
     socket.on('player_update', (data) => {
         const { roomId, matrix, score } = data;
-        
-        // Repassa esses dados para TODOS os outros na sala (exceto quem enviou)
         socket.to(roomId).emit('remote_board_update', {
-            id: socket.id, // Para sabermos de quem é esse tabuleiro
+            id: socket.id,
             matrix: matrix,
             score: score
         });
