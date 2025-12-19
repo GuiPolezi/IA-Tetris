@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tetris Moderno</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="main-card">
+      <div class="game-container">
+        <canvas id="tetris"></canvas>
+      </div>
+
+      <div class="sidebar">
+        <div class="brand">TETRIS</div>
+
+        <div class="stats-group">
+          <div class="stat-item">
+            <span class="label">SCORE</span>
+            <span class="value" id="score">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">LEVEL</span>
+            <span class="value" id="level">1</span>
+          </div>
+        </div>
+
+        <div class="next-piece-box">
+          <span class="label">NEXT</span>
+          <canvas id="next"></canvas>
+        </div>
+
+        <audio id="bgm" loop preload="auto">
+          <source
+            src="https://archive.org/download/TetrisThemeMusic/Tetris.mp3"
+            type="audio/mpeg"
+          />
+        </audio>
+
+        <div class="controls" style="margin-top: 20px">
+          <button
+            onclick="toggleMusic(); this.blur()"
+            class="key long"
+            style="width: 100%; cursor: pointer"
+          >
+            Music: ON/OFF
+          </button>
+        </div>
+
+        <div class="controls">
+          <div class="key-row">
+            <span class="key">←</span>
+            <span class="key">↓</span>
+            <span class="key">→</span>
+          </div>
+          <span class="key-hint">Mover</span>
+
+          <div class="key-row" style="margin-top: 10px">
+            <span class="key long">Espaço</span>
+          </div>
+          <span class="key-hint">Drop</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
