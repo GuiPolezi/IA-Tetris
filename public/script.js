@@ -536,6 +536,8 @@ function startSinglePlayer() {
     player.name = name;
     document.getElementById('menu-overlay').style.display = 'none';
     document.querySelector('.main-card').style.filter = 'none';
+
+    document.querySelector('.remote-players-container').style.display = 'none';
     gameMode = 'single';
     initGame();
 }
@@ -753,6 +755,11 @@ function requestStartGame() {
 socket.on('game_started', () => {
     document.getElementById('menu-overlay').style.display = 'none';
     document.querySelector('.main-card').style.filter = 'none';
+
+    // --- ADICIONE ESTA LINHA ---
+    document.querySelector('.remote-players-container').style.display = 'flex';
+    // ---------------------------
+    
     setupRemotePlayers();
     gameMode = 'multi';
     runCountdown(); // Chama o countdown em vez de initGame direto
@@ -782,3 +789,83 @@ function runCountdown() {
         }
     }, 1000);
 }
+
+// --- SISTEMA DE MÚSICA ---
+
+const playlistData = [
+    { title: "Synthwave Retro", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3" },
+    { title: "Chiptune Level 1", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Rolemusic/The_Pirate_And_The_Dancer/Rolemusic_-_04_-_The_Pirate_And_The_Dancer.mp3" },
+    { title: "Cyberpunk City", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Komiku/Captain_Glouglou/Komiku_-_04_-_Skate.mp3" }
+];
+
+let currentTrackIndex = 0;
+const audioPlayer = document.getElementById('bgm-player');
+const playBtn = document.getElementById('play-btn');
+const trackNameDisplay = document.getElementById('track-name');
+const playlistElement = document.getElementById('playlist');
+
+// Inicializa Playlist
+function initPlaylist() {
+    playlistData.forEach((track, index) => {
+        const li = document.createElement('li');
+        li.innerText = track.title;
+        li.addEventListener('click', () => loadTrack(index));
+        playlistElement.appendChild(li);
+    });
+}
+
+function loadTrack(index) {
+    currentTrackIndex = index;
+    audioPlayer.src = playlistData[index].src;
+    trackNameDisplay.innerText = playlistData[index].title;
+    
+    // Atualiza visual da lista
+    document.querySelectorAll('.playlist li').forEach((li, i) => {
+        li.classList.toggle('active', i === index);
+    });
+
+    playAudio();
+}
+
+function playAudio() {
+    audioPlayer.play()
+        .then(() => playBtn.innerText = "⏸️")
+        .catch(e => console.log("Interação necessária para tocar áudio"));
+}
+
+function togglePlay() {
+    if (audioPlayer.paused) {
+        if (!audioPlayer.src) loadTrack(0); // Carrega a primeira se estiver vazio
+        else playAudio();
+    } else {
+        audioPlayer.pause();
+        playBtn.innerText = "▶️";
+    }
+}
+
+// Event Listeners
+document.getElementById('prev-btn').addEventListener('click', () => {
+    let newIndex = currentTrackIndex - 1;
+    if (newIndex < 0) newIndex = playlistData.length - 1;
+    loadTrack(newIndex);
+});
+
+document.getElementById('next-btn').addEventListener('click', () => {
+    let newIndex = (currentTrackIndex + 1) % playlistData.length;
+    loadTrack(newIndex);
+});
+
+document.getElementById('volume-slider').addEventListener('input', (e) => {
+    audioPlayer.volume = e.target.value;
+});
+
+playBtn.addEventListener('click', togglePlay);
+
+// Toca a próxima automaticamente quando acabar
+audioPlayer.addEventListener('ended', () => {
+    let newIndex = (currentTrackIndex + 1) % playlistData.length;
+    loadTrack(newIndex);
+});
+
+// Inicia a lista ao carregar a página
+initPlaylist();

@@ -1,8 +1,9 @@
 :root {
     --bg-gradient: linear-gradient(135deg, #111115 0%, #1a1a2e 100%);
-    --card-bg: rgba(255, 255, 255, 0.03);
-    --border-color: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(20, 20, 28, 0.95);
     --accent: #6c5ce7;
+    --accent-green: #2ed573;
+    --accent-red: #ff4757;
     --text-muted: #8888a0;
     --text-light: #ffffff;
 }
@@ -19,24 +20,31 @@ body {
     overflow: hidden;
 }
 
-/* Container Principal estilo Cartão */
+/* --- LAYOUT PRINCIPAL (3 Colunas) --- */
+
 .main-card {
-    display: grid;
-    grid-template-columns: 140px auto 140px; 
-    gap: 40px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+    padding: 30px;
     background: var(--card-bg);
-    padding: 40px;
-    border-radius: 24px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    /* Responsividade: Garante que o cartão caiba na tela */
+    max-height: 95vh; 
+    overflow-y: auto; 
 }
 
-/* Container dos Oponentes */
+/* Coluna 1: Oponentes (Esquerda) */
 .remote-players-container {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    width: 120px; /* Largura fixa para alinhar */
 }
 
 .remote-player-slot {
@@ -59,9 +67,10 @@ body {
 
 .remote-canvas {
     background: #000;
-    width: 100px; /* Miniatura */
-    height: 160px; /* Proporção aproximada */
+    width: 100%; /* Adapta ao slot */
+    height: 150px; 
     border: 1px solid #333;
+    display: block;
 }
 
 .remote-score {
@@ -71,70 +80,76 @@ body {
     margin-top: 2px;
 }
 
-/* Área do Canvas */
+/* Coluna 2: Jogo (Centro) */
 .game-container {
-    position: relative;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 2px solid #333;
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    background: #000;
 }
 
 canvas#tetris {
     display: block;
-    border-radius: 4px; 
 }
 
-/* Sidebar */
+/* Coluna 3: Sidebar (Direita) */
 .sidebar {
+    width: 260px; /* Largura Fixa */
+    min-width: 260px; /* Impede encolhimento */
     display: flex;
     flex-direction: column;
-    width: 140px;
+    gap: 15px; 
 }
 
+/* --- MÓDULOS DA SIDEBAR --- */
+
 .brand {
-    font-size: 24px;
-    font-weight: 600;
-    letter-spacing: 4px;
-    color: var(--accent);
-    margin-bottom: 30px;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
     text-align: center;
-    text-shadow: 0 0 15px rgba(108, 92, 231, 0.4);
+    letter-spacing: 4px;
+    margin-bottom: 5px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .stats-group {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-bottom: 30px;
+    justify-content: space-between;
+    gap: 10px;
 }
 
 .stat-item {
-    display: flex;
-    flex-direction: column;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    flex: 1;
+    text-align: center;
 }
 
-.label {
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-    font-weight: 600;
+.stat-item .label {
+    display: block;
+    font-size: 0.7rem;
+    color: #aaa;
+    margin-bottom: 5px;
 }
 
-.value {
-    font-size: 28px;
-    font-weight: 300;
+.stat-item .value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
 }
 
 .next-piece-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 15px 0;
-    border-radius: 12px;
-    margin-bottom: auto; 
+    justify-content: center;
+    min-height: 90px;
 }
 
 canvas#next {
@@ -143,10 +158,138 @@ canvas#next {
     height: 60px !important;
 }
 
-.controls {
+/* --- MUSIC PLAYER --- */
+.music-player {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(46, 213, 115, 0.3);
+    border-radius: 12px;
+    padding: 15px;
     text-align: center;
-    border-top: 1px solid var(--border-color);
-    padding-top: 20px;
+    margin-bottom: 5px;
+}
+
+.music-player h3 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: var(--accent-green);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.track-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+#track-name {
+    display: block;
+    font-size: 0.85rem;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 5px;
+}
+
+/* Visualizer */
+.visualizer {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 3px;
+    height: 15px;
+}
+
+.bar {
+    width: 4px;
+    background: var(--accent-green);
+    animation: bounce 1s infinite ease-in-out;
+}
+.bar:nth-child(2) { animation-delay: 0.1s; }
+.bar:nth-child(3) { animation-delay: 0.2s; }
+.bar:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes bounce {
+    0%, 100% { height: 3px; }
+    50% { height: 100%; }
+}
+
+/* Controles de Música */
+.music-player .controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.music-player button {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0; 
+}
+
+.music-player button:hover {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: #000;
+}
+
+/* Slider */
+#volume-slider {
+    width: 100%;
+    height: 4px;
+    background: #444;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity .2s;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+#volume-slider:hover { opacity: 1; }
+
+/* Playlist */
+.playlist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 80px; 
+    overflow-y: auto; 
+    text-align: left;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.playlist::-webkit-scrollbar { width: 4px; }
+.playlist::-webkit-scrollbar-thumb { background: #555; border-radius: 2px;}
+
+.playlist li {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    color: #aaa;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.playlist li:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.playlist li.active { color: var(--accent-green); font-weight: bold; }
+
+/* --- CONTROLES DO JOGO (Teclado) --- */
+.sidebar > .controls { 
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: auto; 
 }
 
 .key-row {
@@ -156,32 +299,18 @@ canvas#next {
 }
 
 .key {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
+    background: #333;
+    color: #fff;
+    padding: 5px 10px;
     border-radius: 4px;
-    width: 24px;
-    height: 24px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ccc;
+    font-size: 0.8rem;
+    border-bottom: 2px solid #111;
 }
 
-.key.long {
-    width: 60px;
-    font-size: 10px;
-    text-transform: uppercase;
-}
+.key.long { width: 80px; }
+.key-hint { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; margin-bottom: 5px;}
+/* --- MENUS E MODAIS --- */
 
-.key-hint {
-    display: block;
-    font-size: 9px;
-    color: var(--text-muted);
-    margin-top: 4px;
-}
-
-/* Animações e Efeitos */
 .shake {
     animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
 }
@@ -193,76 +322,51 @@ canvas#next {
     40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
-/* Menus */
-#menu-overlay {
+/* Estilo Base Compartilhado (Sem definir o display ainda) */
+#menu-overlay, #pause-menu {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
     background: rgba(0,0,0,0.85);
-    z-index: 100;
-    display: flex;
+    z-index: 9999;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(8px);
-    transition: opacity 0.5s;
-}
-/* 1. O Overlay (Fundo Escuro) */
-#pause-menu {
-    position: fixed;       /* Fixa na tela, independente da rolagem */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    
-    /* Fundo escuro com leve transparência */
-    background: rgba(0, 0, 0, 0.85); 
-    
-    /* Efeito de vidro fosco (muito moderno) */
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-
-    /* Centralização perfeita com Flexbox */
-    display: none; /* Controlado pelo JS */
-    justify-content: center;
-    align-items: center;
-    
-    /* Garante que fique acima de TUDO (Canvas, UI, etc) */
-    z-index: 9999; 
 }
 
-/* 2. A Caixa do Menu (O Cartão) */
+/* Menu Principal: Começa VISÍVEL */
+#menu-overlay {
+    display: flex; 
+}
+
+/* Menu de Pausa: Começa ESCONDIDO */
+#pause-menu {
+    display: none;
+}
+
+/* Conteúdo do Menu de Pausa */
 #pause-menu .menu-content {
-    background: #1e1e24;   /* Cinza chumbo escuro moderno */
+    background: #1e1e24;
     padding: 40px;
-    border-radius: 12px;   /* Bordas arredondadas */
-    
-    /* Sombra suave para dar profundidade (elevação) */
+    border-radius: 12px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    
-    /* Borda sutil para destacar do fundo */
     border: 1px solid rgba(255, 255, 255, 0.1);
-    
     text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 15px;             /* Espaço entre os botões */
-    min-width: 320px;      /* Largura mínima confortável */
-    
-    /* Pequena animação de entrada */
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    gap: 15px;
+    min-width: 320px;
+    animation: popIn 0.3s ease;
 }
 
-/* 3. Título */
 #pause-menu h2 {
     margin: 0 0 20px 0;
     color: #fff;
-    font-family: 'Arial', sans-serif; /* Ou sua fonte customizada */
     font-size: 2rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
 }
 
-/* 4. Estilização Geral dos Botões */
 #pause-menu button {
     padding: 12px 20px;
     font-size: 1.1rem;
@@ -270,46 +374,16 @@ canvas#next {
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
     text-transform: uppercase;
     color: white;
-    outline: none;
+    transition: transform 0.2s;
 }
 
-/* Efeito de Hover (passar o mouse) nos botões */
-#pause-menu button:hover {
-    transform: translateY(-2px); /* Levanta levemente */
-    filter: brightness(1.2);     /* Fica mais brilhante */
-}
+#pause-menu button:hover { transform: translateY(-2px); filter: brightness(1.2); }
+#btn-resume { background-color: var(--accent-green); box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3); }
+#btn-quit { background-color: var(--accent-red); box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3); }
 
-/* Efeito de Clique */
-#pause-menu button:active {
-    transform: translateY(1px);
-}
-
-/* 5. Cores Específicas */
-#btn-resume {
-    background-color: #2ed573; /* Verde Neon (estilo Tetris) */
-    box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3); /* Brilho verde */
-}
-
-#btn-quit {
-    background-color: #ff4757; /* Vermelho Neon */
-    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3); /* Brilho vermelho */
-}
-
-/* Animação Pop-in (O menu surge crescendo) */
-@keyframes popIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
+/* Caixas de Menu (Principal, Multiplayer, Lobby) */
 .menu-box {
     background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
     padding: 40px;
@@ -318,6 +392,8 @@ canvas#next {
     text-align: center;
     box-shadow: 0 0 50px rgba(0,0,0,0.5);
     width: 300px;
+    /* Adicionado position relative caso precise de elementos internos absolutos */
+    position: relative; 
 }
 
 .menu-box h1 {
@@ -338,6 +414,7 @@ canvas#next {
     font-family: 'Outfit', sans-serif;
     text-align: center;
     font-size: 16px;
+    width: 80%;
 }
 
 .menu-buttons {
@@ -358,22 +435,11 @@ canvas#next {
     transition: transform 0.2s, background 0.2s;
 }
 
-.btn-menu:hover {
-    transform: translateY(-2px);
-    background: #5b4bc4;
-}
+.btn-menu:hover { transform: translateY(-2px); background: #5b4bc4; }
+.btn-menu.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.2); }
+.btn-menu.disabled { opacity: 0.5; cursor: not-allowed; background: #444; }
 
-.btn-menu.secondary {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.btn-menu.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: #444;
-}
-
+/* Lobby List */
 .player-list-box {
     background: rgba(0,0,0,0.3);
     border-radius: 8px;
@@ -382,42 +448,20 @@ canvas#next {
     text-align: left;
     min-height: 150px;
 }
+.player-list-box h3 { color: #888; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 0; }
+#players-list { list-style: none; padding: 0; margin: 0; }
+#players-list li { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
+.is-me { color: var(--accent); font-weight: bold; }
 
-.player-list-box h3 {
-    margin-top: 0;
-    font-size: 14px;
-    color: #888;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 10px;
+/* Animações */
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
 }
 
-#players-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-#players-list li {
-    padding: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    display: flex;
-    justify-content: space-between;
-}
-
-#players-list li:last-child {
-    border-bottom: none;
-}
-
-.is-me {
-    color: var(--accent);
-    font-weight: bold;
-}
-
-/* NOVO: Estilo para o Countdown */
 #countdown {
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     font-size: 100px;
     font-weight: bold;
@@ -428,10 +472,7 @@ canvas#next {
     font-family: 'Outfit', sans-serif;
 }
 
-.pulse {
-    animation: pulseAnim 0.8s ease-out infinite;
-}
-
+.pulse { animation: pulseAnim 0.8s ease-out infinite; }
 @keyframes pulseAnim {
     0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
     50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }

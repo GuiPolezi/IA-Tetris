@@ -137,22 +137,29 @@
           <canvas id="next"></canvas>
         </div>
 
-        <audio id="bgm" loop preload="auto">
-          <source
-            src="https://archive.org/download/TetrisThemeMusic/Tetris.mp3"
-            type="audio/mpeg"
-          />
-        </audio>
+        <div class="music-player">
+            <h3>🎵 Rádio Tetris</h3>
+            
+            <div class="track-info">
+                <span id="track-name">Selecione uma música</span>
+                <div class="visualizer">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
+            </div>
 
-        <div class="controls" style="margin-top: 20px">
-          <button
-            onclick="toggleMusic(); this.blur()"
-            class="key long"
-            style="width: 100%; cursor: pointer"
-          >
-            Music: ON/OFF
-          </button>
+            <div class="controls">
+                <button id="prev-btn">⏮️</button>
+                <button id="play-btn">▶️</button>
+                <button id="next-btn">⏭️</button>
+            </div>
+
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+
+            <ul id="playlist" class="playlist">
+                </ul>
         </div>
+
+        <audio id="bgm-player"></audio>
 
         <div class="controls">
           <div class="key-row">
