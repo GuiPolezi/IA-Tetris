@@ -8,10 +8,11 @@ const io = new Server(server);
 
 // --- CORREÇÃO: Servir arquivos da Raiz (Root) ---
 // Se seus arquivos index.html, style.css e script.js estão na mesma pasta do server.js:
-app.use(express.static(__dirname));
+// Ajuste para servir a pasta estática correta
+app.use(express.static(path.join(__dirname, 'public'))); // Se a pasta chamar 'public'
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ESTADO DO SERVIDOR
