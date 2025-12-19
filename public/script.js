@@ -339,6 +339,30 @@ function arenaSweep() {
     }
 }
 
+// Adicione em qualquer lugar junto com suas funções auxiliares
+function getBoardSnapshot() {
+    // 1. Cria uma cópia profunda da Arena atual (para não alterar a original)
+    const snapshot = arena.map(row => [...row]);
+
+    // 2. Se o jogo estiver rodando, desenha a peça do jogador nessa cópia
+    if (isGameRunning && player.matrix) {
+        player.matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    const py = y + player.pos.y;
+                    const px = x + player.pos.x;
+                    
+                    // Verifica limites para não dar erro
+                    if (snapshot[py] && snapshot[py][px] !== undefined) {
+                        snapshot[py][px] = value;
+                    }
+                }
+            });
+        });
+    }
+    return snapshot;
+}
+
 function playerReset() {
     if (nextPieceMatrix === null) nextPieceMatrix = getNextPiece();
     player.matrix = nextPieceMatrix;
@@ -381,6 +405,7 @@ function playerDrop() {
         arenaSweep();
     }
     dropCounter = 0;
+    broadcastGameState();
 }
 
 function updateScore() {
@@ -466,6 +491,10 @@ document.addEventListener('keydown', event => {
         playerReset();
         arenaSweep();
         dropCounter = 0;
+    }
+
+    if (moved) {
+        broadcastGameState();
     }
 });
 
@@ -609,7 +638,14 @@ function enterLobby(roomId) {
 
 function broadcastGameState() {
     if (!currentRoomId) return;
-    socket.emit('player_update', { roomId: currentRoomId, matrix: arena, score: player.score });
+    // MUDANÇA AQUI: Usamos o snapshot que inclui a peça caindo
+    const boardToSend = getBoardSnapshot(); 
+    
+    socket.emit('player_update', { 
+        roomId: currentRoomId, 
+        matrix: boardToSend, // Envia o tabuleiro combinado
+        score: player.score 
+    });
 }
 
 const remotePlayersMap = {}; 
