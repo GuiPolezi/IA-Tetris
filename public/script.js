@@ -795,7 +795,7 @@ function runCountdown() {
 const playlistData = [
     { title: "Synthwave Retro", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3" },
     { title: "Chiptune Level 1", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Rolemusic/The_Pirate_And_The_Dancer/Rolemusic_-_04_-_The_Pirate_And_The_Dancer.mp3" },
-    { title: "Cyberpunk City", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Komiku/Captain_Glouglou/Komiku_-_04_-_Skate.mp3" }
+    { title: "Cyberpunk City", src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Komiku/Captain_Glouglou/Komiku_-_04_-_Skate.mp3" },
 ];
 
 let currentTrackIndex = 0;
