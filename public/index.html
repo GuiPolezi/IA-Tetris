@@ -13,48 +13,97 @@
   </head>
   <body>
     <div id="menu-overlay">
-      
       <div id="main-menu" class="menu-box">
-          <h1>TETRIS <span style="color:var(--accent)">ONLINE</span></h1>
-          <div class="input-group">
-              <input type="text" id="player-name" placeholder="Digite seu Nickname" maxlength="10">
-          </div>
-          <div class="menu-buttons">
-              <button onclick="startSinglePlayer()" class="btn-menu">Singleplayer</button>
-              <button onclick="showMultiplayerMenu()" class="btn-menu">Multiplayer</button>
-          </div>
+        <h1>TETRIS <span style="color: var(--accent)">ONLINE</span></h1>
+        <div class="input-group">
+          <input
+            type="text"
+            id="player-name"
+            placeholder="Digite seu Nickname"
+            maxlength="10"
+          />
+        </div>
+        <div class="menu-buttons">
+          <button onclick="startSinglePlayer()" class="btn-menu">
+            Singleplayer
+          </button>
+          <button onclick="showMultiplayerMenu()" class="btn-menu">
+            Multiplayer
+          </button>
+        </div>
       </div>
 
-      <div id="multiplayer-menu" class="menu-box" style="display: none;">
-          <h1>MULTIPLAYER</h1>
-          <div class="input-group">
-              <input type="text" id="room-code-input" placeholder="Código da Sala (Ex: A1B2)" style="text-transform: uppercase;">
-          </div>
-          <div class="menu-buttons">
-              <button onclick="createRoom()" class="btn-menu">Criar Sala</button>
-              <button onclick="joinRoom()" class="btn-menu secondary">Entrar na Sala</button>
-              <button onclick="backToMain()" class="btn-menu" style="background: #444; margin-top: 10px;">Voltar</button>
-          </div>
+      <div id="multiplayer-menu" class="menu-box" style="display: none">
+        <h1>MULTIPLAYER</h1>
+        <div class="input-group">
+          <input
+            type="text"
+            id="room-code-input"
+            placeholder="Código da Sala (Ex: A1B2)"
+            style="text-transform: uppercase"
+          />
+        </div>
+        <div class="menu-buttons">
+          <button onclick="createRoom()" class="btn-menu">Criar Sala</button>
+          <button onclick="joinRoom()" class="btn-menu secondary">
+            Entrar na Sala
+          </button>
+          <button
+            onclick="backToMain()"
+            class="btn-menu"
+            style="background: #444; margin-top: 10px"
+          >
+            Voltar
+          </button>
+        </div>
       </div>
 
-      <div id="lobby-screen" class="menu-box" style="display: none; width: 400px;">
-          <h1>SALA: <span id="current-room-id" style="color:var(--accent)">...</span></h1>
-          
-          <div class="player-list-box">
-              <h3>Jogadores (<span id="player-count">0</span>/4)</h3>
-              <ul id="players-list">
-                  </ul>
-          </div>
+      <div
+        id="lobby-screen"
+        class="menu-box"
+        style="display: none; width: 400px"
+      >
+        <h1>
+          SALA:
+          <span id="current-room-id" style="color: var(--accent)">...</span>
+        </h1>
 
-          <div class="menu-buttons">
-              <button id="btn-start-game" onclick="requestStartGame()" class="btn-menu disabled">Aguardando Dono...</button>
-          </div>
+        <div class="player-list-box">
+          <h3>Jogadores (<span id="player-count">0</span>/4)</h3>
+          <ul id="players-list"></ul>
+        </div>
+
+        <div class="menu-buttons">
+          <button
+            id="btn-start-game"
+            onclick="requestStartGame()"
+            class="btn-menu disabled"
+          >
+            Aguardando Dono...
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-card" style="filter: blur(5px)">
+      <div class="remote-players-container">
+        <div class="remote-player-slot" id="remote-slot-0">
+          <span class="remote-name">Aguardando...</span>
+          <canvas class="remote-canvas" width="100" height="200"></canvas>
+          <span class="remote-score">0</span>
+        </div>
+        <div class="remote-player-slot" id="remote-slot-1">
+          <span class="remote-name">Aguardando...</span>
+          <canvas class="remote-canvas" width="100" height="200"></canvas>
+          <span class="remote-score">0</span>
+        </div>
+        <div class="remote-player-slot" id="remote-slot-2">
+          <span class="remote-name">Aguardando...</span>
+          <canvas class="remote-canvas" width="100" height="200"></canvas>
+          <span class="remote-score">0</span>
+        </div>
       </div>
 
-  </div>
-
-<div class="main-card" style="filter: blur(5px);">
-    <div class="main-card">
       <div class="game-container">
         <canvas id="tetris"></canvas>
       </div>
@@ -110,7 +159,6 @@
         </div>
       </div>
     </div>
-
     <script src="script.js"></script>
   </body>
 </html>

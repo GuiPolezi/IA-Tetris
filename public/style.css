@@ -21,7 +21,11 @@ body {
 
 /* Container Principal estilo Cartão */
 .main-card {
-    display: flex;
+    display: grid;
+    /* Grid de 3 colunas: Oponentes | Jogo Principal | Stats */
+    grid-template-columns: 140px auto 140px; 
+    gap: 30px;
+    padding: 30px;
     gap: 40px;
     background: var(--card-bg);
     padding: 40px;
@@ -29,6 +33,45 @@ body {
     border: 1px solid var(--border-color);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
+}
+
+/* Container dos Oponentes */
+.remote-players-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.remote-player-slot {
+    background: rgba(0,0,0,0.3);
+    padding: 8px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.remote-name {
+    display: block;
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.remote-canvas {
+    background: #000;
+    width: 100px; /* Miniatura */
+    height: 160px; /* Proporção aproximada */
+    border: 1px solid #333;
+}
+
+.remote-score {
+    display: block;
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 2px;
 }
 
 /* Área do Canvas */

@@ -98,6 +98,29 @@ io.on('connection', (socket) => {
             }
         }
     });
+
+    // 4. INICIAR JOGO (Apenas Host)
+    socket.on('start_game', (roomId) => {
+        const room = rooms[roomId];
+        if (room) {
+            room.gameStarted = true;
+            // Avisa TODOS na sala para começarem
+            io.to(roomId).emit('game_started');
+        }
+    });
+
+    // 5. ATUALIZAÇÃO DE ESTADO (Sync)
+    // O cliente envia: { matrix, score, shadow }
+    socket.on('player_update', (data) => {
+        const { roomId, matrix, score } = data;
+        
+        // Repassa esses dados para TODOS os outros na sala (exceto quem enviou)
+        socket.to(roomId).emit('remote_board_update', {
+            id: socket.id, // Para sabermos de quem é esse tabuleiro
+            matrix: matrix,
+            score: score
+        });
+    });
 });
 
 const PORT = process.env.PORT || 3000;

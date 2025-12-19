@@ -2,12 +2,17 @@ const canvas = document.getElementById('tetris');
 const context = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next');
 const nextContext = nextCanvas.getContext('2d');
-
+let currentRoomPlayers = [];
 // --- CONFIGURAÇÃO ---
 const BLOCK_SIZE = 35; // AUMENTADO (Era 30) - Jogo Maior
 const NEXT_BLOCK_SIZE = 18; // DIMINUÍDO - Preview Menor
 const COLS = 10;
 const ROWS = 20;
+
+// Inicializa o Socket.io
+const socket = io();
+let currentRoomId = null;
+let isHost = false;
 
 // --- SISTEMA DE ÁUDIO (SINTETIZADOR) ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -273,6 +278,7 @@ function merge(arena, player) {
             }
         });
     });
+    broadcastGameState();
 }
 
 function rotate(matrix, dir) {
@@ -333,6 +339,7 @@ function arenaSweep() {
         dropInterval = Math.max(100, 1000 - (player.level - 1) * 100); 
         updateScore();
     }
+    broadcastGameState();
 }
 
 function playerReset() {
@@ -485,33 +492,217 @@ function initGame() {
 }
 
 // --- LÓGICA DO MENU ---
+// --- NAVEGAÇÃO DE MENUS ---
+
+function getName() {
+    const name = document.getElementById('player-name').value;
+    if (!name) {
+        alert("Digite um nome!");
+        return null;
+    }
+    return name;
+}
 
 function startSinglePlayer() {
-    const nameInput = document.getElementById('player-name').value;
-    if (!nameInput) {
-        alert("Por favor, digite um Nickname!");
+    const name = getName();
+    if (!name) return;
+    player.name = name;
+    
+    // Esconde menus e inicia
+    document.getElementById('menu-overlay').style.display = 'none';
+    document.querySelector('.main-card').style.filter = 'none';
+    initGame();
+}
+
+function showMultiplayerMenu() {
+    const name = getName();
+    if (!name) return;
+    player.name = name; // Salva no objeto global player
+    
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('multiplayer-menu').style.display = 'block';
+}
+
+function backToMain() {
+    document.getElementById('multiplayer-menu').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'block';
+}
+
+// --- COMUNICAÇÃO SOCKET (MULTIPLAYER) ---
+
+function createRoom() {
+    // Envia evento para o servidor
+    socket.emit('create_room', player.name);
+}
+
+function joinRoom() {
+    const roomId = document.getElementById('room-code-input').value.toUpperCase();
+    if (!roomId) {
+        alert("Digite o código da sala!");
         return;
     }
+    socket.emit('join_room', { roomId: roomId, playerName: player.name });
+}
 
-    // Salva o nome (usaremos no multiplayer depois)
-    player.name = nameInput;
+// --- ESCUTANDO RESPOSTAS DO SERVIDOR ---
 
-    // Esconde o menu e tira o blur do jogo
-    const menu = document.getElementById('menu-overlay');
-    const gameCard = document.querySelector('.main-card');
+socket.on('room_created', (roomId) => {
+    enterLobby(roomId);
+    isHost = true; // Quem cria é o host
+});
+
+socket.on('joined_success', (roomId) => {
+    enterLobby(roomId);
+    isHost = false;
+});
+
+socket.on('error_message', (msg) => {
+    alert(msg);
+});
+
+socket.on('remote_board_update', (data) => {
+    // data = { id, matrix, score }
     
-    menu.style.opacity = '0';
-    setTimeout(() => {
-        menu.style.display = 'none';
-        gameCard.style.filter = 'none'; // Remove o blur
-        initGame(); // Inicia o jogo
-    }, 500);
+    // Descobre qual slot visual pertence a esse jogador
+    const slotIndex = remotePlayersMap[data.id];
+    
+    if (slotIndex !== undefined) {
+        // Atualiza Score
+        const slot = document.getElementById(`remote-slot-${slotIndex}`);
+        slot.querySelector('.remote-score').innerText = data.score;
+        
+        // Desenha o Tabuleiro Remoto
+        const remoteCanvas = slot.querySelector('.remote-canvas');
+        const remoteCtx = remoteCanvas.getContext('2d');
+        
+        // Limpa
+        remoteCtx.fillStyle = '#000';
+        remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
+        
+        // Desenha a Matriz recebida
+        // Precisamos ajustar a escala. O canvas remoto é pequeno (ex: 100px largura).
+        // Se o tabuleiro tem 10 colunas, cada bloco tem 10px.
+        const blockSize = remoteCanvas.width / 10; 
+        
+        data.matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    remoteCtx.fillStyle = colors[value]; // Usa as mesmas cores
+                    remoteCtx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+                }
+            });
+        });
+    }
+});
+
+// ATUALIZAÇÃO DA SALA (Sempre que alguém entra/sai)
+socket.on('update_room_state', (roomData) => {
+    // --- [NOVO] SALVA A LISTA DE JOGADORES NA VARIÁVEL GLOBAL ---
+    currentRoomPlayers = roomData.players; 
+    // -----------------------------------------------------------
+
+    const playersListEl = document.getElementById('players-list');
+    const countEl = document.getElementById('player-count');
+    const startBtn = document.getElementById('btn-start-game');
+
+    playersListEl.innerHTML = ''; // Limpa lista atual
+    countEl.innerText = roomData.players.length;
+
+    // Reconstrói a lista visual
+    roomData.players.forEach(p => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span class="${p.name === player.name ? 'is-me' : ''}">
+                ${p.name} ${p.isHost ? '👑' : ''}
+            </span>
+        `;
+        playersListEl.appendChild(li);
+    });
+
+    // Lógica do Botão Iniciar
+    if (isHost) {
+        startBtn.innerText = "Iniciar Partida";
+        startBtn.classList.remove('disabled');
+    } else {
+        startBtn.innerText = "Aguardando Host...";
+        startBtn.classList.add('disabled');
+    }
+});
+
+function enterLobby(roomId) {
+    currentRoomId = roomId;
+    document.getElementById('current-room-id').innerText = roomId;
+    
+    // Troca de tela
+    document.getElementById('multiplayer-menu').style.display = 'none';
+    document.getElementById('lobby-screen').style.display = 'block';
 }
 
-function openMultiplayerMenu() {
-    // Aqui implementaremos a lógica de salas na próxima etapa
-    alert("Funcionalidade Multiplayer será implementada no próximo passo!");
+function broadcastGameState() {
+    if (!currentRoomId) return; // Só envia se estiver online
+    
+    // Envia apenas o essencial: Matriz do tabuleiro e Score
+    socket.emit('player_update', {
+        roomId: currentRoomId,
+        matrix: arena, // Sua matriz global 'arena'
+        score: player.score
+    });
 }
+
+// --- ONDE CHAMAR ESSA FUNÇÃO? ---
+// Procure a função 'merge(arena, player)' e adicione no final dela:
+// broadcastGameState();
+//
+// Procure a função 'arenaSweep()' e adicione no final dela também:
+// broadcastGameState();
+
+// Mapeia SocketID -> Slot HTML (0, 1 ou 2)
+const remotePlayersMap = {}; 
+
+function setupRemotePlayers() {
+    // Pega a lista de jogadores atual da sala (que salvamos no update_room_state)
+    // Precisamos salvar a lista globalmente quando ela chega
+    // Nota: Você precisa garantir que a variável 'currentRoomPlayers' exista e seja atualizada no 'update_room_state'
+    
+    let slotIndex = 0;
+    
+    // 'currentRoomPlayers' deve ser definida globalmente no topo do arquivo: let currentRoomPlayers = [];
+    // E atualizada dentro do socket.on('update_room_state') -> currentRoomPlayers = roomData.players;
+    
+    currentRoomPlayers.forEach(p => {
+        if (p.id !== socket.id) { // Se não sou eu
+            if (slotIndex < 3) {
+                // Associa o ID do socket ao slot visual
+                remotePlayersMap[p.id] = slotIndex;
+                
+                // Atualiza nome no HTML
+                const slot = document.getElementById(`remote-slot-${slotIndex}`);
+                slot.querySelector('.remote-name').innerText = p.name;
+                
+                slotIndex++;
+            }
+        }
+    });
+}
+
+// Atualize a função requestStartGame
+function requestStartGame() {
+    if (!isHost) return;
+    socket.emit('start_game', currentRoomId);
+}
+
+// Escuta o início do jogo
+socket.on('game_started', () => {
+    // Esconde o lobby
+    document.getElementById('menu-overlay').style.display = 'none';
+    document.querySelector('.main-card').style.filter = 'none';
+    
+    // Configura os oponentes visualmente
+    setupRemotePlayers();
+    
+    // Inicia o loop
+    initGame();
+});
 
 // NOTA: Remova as chamadas diretas de playerReset, updateScore e update que estavam aqui soltas
 // O jogo agora só começa quando initGame() é chamado.
