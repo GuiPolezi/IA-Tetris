@@ -6,6 +6,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+const path = require('path'); // Adicione o require('path') no topo
 // --- CORREÇÃO: Servir arquivos da Raiz (Root) ---
 // Se seus arquivos index.html, style.css e script.js estão na mesma pasta do server.js:
 // Ajuste para servir a pasta estática correta
